@@ -228,7 +228,7 @@ inline void acknowledge() {
 
 #ifdef DEBUG
 #define LINE_FEED 0xAA
-#define MAX_LOG_SIZE 300
+#define MAX_LOG_SIZE 60
 volatile byte cmdLog[MAX_LOG_SIZE] = {0};
 volatile byte datLog[MAX_LOG_SIZE] = {0};
 volatile int logCount = 0;
@@ -307,13 +307,13 @@ void loop() {
     Serial.print(sw_data.btn_d);
   
     Serial.print("; (");
-    Serial.print(sw_data.x - 512);
+    Serial.print(sw_data.x/4);
     Serial.print(", ");
-    Serial.print(sw_data.y - 512);
+    Serial.print(sw_data.y/4);
     Serial.print("); rudder=");
-    Serial.print(sw_data.r - 32);
+    Serial.print(sw_data.r*4);
     Serial.print("; throttle=");
-    Serial.print(sw_data.m);
+    Serial.print(sw_data.m*2);
     Serial.print("; HAT=");
     Serial.print(sw_data.head);
     Serial.println();
