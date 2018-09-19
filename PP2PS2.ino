@@ -89,23 +89,30 @@ void setup() {
 //    digitalWrite(PIN_CLEAR, HIGH);
 }
 
-#define DS_SELECT   (pp->shift() & pp->top_up())
-#define DS_START    (pp->shift() & pp->top_down())
+#define DS_SELECT   pp->c()
+//(pp->shift() & pp->top_up())
+#define DS_START    pp->b()
+//(pp->shift() & pp->top_down())
 #define DS_CROSS  pp->fire()
 #define DS_CIRCLE  pp->top()
 #define DS_TRIANGLE  pp->top_up()
 #define DS_SQUARE  pp->top_down()
 
 
-#define DS_L1  pp->c()
-#define DS_L2  pp->d()
-#define DS_R1  pp->b()
-#define DS_R2  pp->a()
+#define DS_L1  pp->d()
+#define DS_L2  0 //pp->d()
+#define DS_R1  pp->a()
+#define DS_R2  0 //pp->a()
 
 inline byte sw1()
 {
-  return ~(DS_SELECT | (DS_START << 3));
-//    (pp->up() << 4) | (pp->right() << 5) | (pp->down() << 6) | (pp->left() << 7);
+  byte hat = pp->hat_switch();
+  byte up = (hat == 1) || (hat == 2) || (hat == 8);
+  byte right = (hat >= 2) && (hat <= 4);
+  byte down = (hat >= 4) && (hat <= 6);
+  byte left = (hat >= 6) && (hat <= 8);
+  return (DS_SELECT | (DS_START << 3) |
+    (up << 4) | (right << 5) | (down << 6) | (left << 7) );
 }
 
 
@@ -120,20 +127,16 @@ inline byte readDataResponse(byte i) {
     const byte DAT[] = {0xFF, 0x41, 0x5A, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
     switch (i) {
     case 1: return isConfigMode ? 0xF3 : (isAnalogMode ? 0x73 : 0x41);
-    case 3: return SW1; //sw1();
-    case 4: return SW2; //sw2();
+    case 3: return sw1();
+    case 4: return sw2();
     case 5: 
-      return RH;
-//      return pp->x()/4 + 128; // RH
+      return pp->rudder()*4; //RH;
     case 6: 
-      return RV;
-//      return pp->y()/4 + 128; // RV
+      return pp->throttle()*2; //RV;
     case 7: 
-      return LH;
-//      return pp->rudder()*4 + 128; //LH;
+      return pp->x()/4; // LH
     case 8: 
-      return LV;
-//      return pp->throttle()*2;//LV;
+      return pp->y()/4; // LV
     default: 
       return DAT[i];
     }
