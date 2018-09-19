@@ -1,7 +1,11 @@
 #ifndef _PRECISIONPRO_
 #define _PRECISIONPRO_
 
+#define INT0_READ
+
+#ifndef INT0_READ
 #include <SPI.h>
+#endif
 #include "portmacro.h"
 
 // SPI pins (Arduino Nano)
@@ -53,6 +57,9 @@ typedef union
 } sw_data_t;
 
 
+uint8_t reg_data[50];
+uint8_t *pdata;
+void oneclock();
 
 
 
@@ -68,6 +75,8 @@ class PrecisionPro
     volatile sw_data_t sw_data;
     volatile byte pos;
 
+  
+
   public:
 
   PrecisionPro(int pin_trigger, int pin_clear, int mosi=MOSI, int sck=SCK, int ss=SS)
@@ -80,11 +89,16 @@ class PrecisionPro
   }
 
 
+
   void init()
   {
+    pinMode(trigger_pin, OUTPUT);
+    portOn(trigger_pin);
+#ifdef INT0_READ
     pinMode(mosi_pin, INPUT_PULLUP);
     pinMode(sck_pin, INPUT_PULLUP);
-    pinMode(trigger_pin, OUTPUT);
+    attachInterrupt(0, oneclock, RISING);
+#else
     pinMode(clear_pin,   OUTPUT);
     digitalWrite(clear_pin, LOW);
 
@@ -96,12 +110,32 @@ class PrecisionPro
     SPCR |= _BV(SPE); // set slave mode
     SPI.setBitOrder(LSBFIRST);
     SPI.attachInterrupt();
+#endif
   }
 
 
   void update()
   {
+    pdata = reg_data;    
     portOff(trigger_pin);
+#ifdef INT0_READ
+    delayMicroseconds(1000);
+
+    pos = 0;
+    portOn(trigger_pin);
+
+    uint8_t * pd = reg_data+1;
+    uint8_t spi;
+    for (int i = 0; i < 6; i++) {
+      spi = 0;
+      for (int j = 0; j < 8; j++, pd++) {
+        int b = (*pd & _BV(REG(mosi_pin))) != 0;
+        spi |= b << j;
+      }
+      add_buf(spi);
+    }
+
+#else
     delayMicroseconds(500);
     // clear_pinを使ってSSをHIGHにして、SPIのシフトレジスタをクリア
     // （これをしないと入力信号がずれていく）
@@ -109,13 +143,12 @@ class PrecisionPro
     portOn(clear_pin);
     delayMicroseconds(100);
     portOff(clear_pin);
-
     delayMicroseconds(400);
 
     pos = 0;
     portOn(trigger_pin);
-
     // trigger_pinをHIGHにしたあと、呼び出し側で1000us待つと結果がPrecisionPro::dataに反映する
+#endif
   }
 
 
@@ -168,21 +201,24 @@ class PrecisionPro
     return sw_data.head;
   }
 
-
+  // 10bits Value (0-1023)
   int x() {
-    return sw_data.x - 512;
+    return sw_data.x;
   }
 
+  // 10bits Value (0-1023)
   int y() {
-    return sw_data.y - 512;
+    return sw_data.y;
   }
 
+  // 7bits Value (0-127)
   int throttle() {
     return sw_data.m;
   }
 
+  // 6bits Value (0-63)
   int rudder() {
-    return sw_data.r - 32;
+    return sw_data.r;
   }
 
 

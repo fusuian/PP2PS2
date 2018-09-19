@@ -33,18 +33,37 @@ volatile byte RV = 0x80;
 volatile byte LH = 0x80;
 volatile byte LV = 0x80;
 
-#define PIN_TRIGGER 8
-#define PIN_CLEAR   7
+#if 1
+// Arduino Nano
+int mosi_pin = 3;
+int sck_pin  = 2;  // 割り込みピン(2 or 3)であること！
+int trigger_pin = 4;
+int check_pin = 5;
+int clear_pin = 5;
+int ss_pin = 5;
+#else
+// Arduino Pro Mini
+int mosi_pin = 9;
+int sck_pin  = 2;  // 割り込みピン(2 or 3)であること！
+int trigger_pin = 8;
+int check_pin = 5;
+int clear_pin = 5; // ソフトウェア読み取りでは使わない
+int ss_pin = 5; // ソフトウェア読み取りでは使わない
+#endif
+
 
 PrecisionPro * pp;
 
 bool isController = false;
 
-// SPI割り込み
-//ISR (SPI_STC_vect)
-//{
-//  pp->add_buf(SPDR);
-//}
+
+void oneclock()
+{
+  *pdata++ = PIN(mosi_pin);
+}
+
+
+
 
 void setup() {
     // SPI setup
@@ -65,9 +84,9 @@ void setup() {
     Serial.begin(57600);
 #endif
 
-    pp = new PrecisionPro(PIN_TRIGGER, PIN_CLEAR, MOSI, SCK, SS);
-//    pp->init();
-    digitalWrite(PIN_CLEAR, HIGH);
+    pp = new PrecisionPro(trigger_pin, clear_pin, mosi_pin, sck_pin, ss_pin);
+    pp->init();
+//    digitalWrite(PIN_CLEAR, HIGH);
 }
 
 #define DS_SELECT   (pp->shift() & pp->top_up())
@@ -214,10 +233,6 @@ volatile int logCount = 0;
 
 
 ISR(SPI_STC_vect) {
-//    if (isController) {
-//      pp->add_buf(SPDR);
-//      return;
-//    }
     static byte ID = 0x41;
     static byte CMD[CMD_BYTES] = {0};
     static byte cmdCount = 0;
@@ -263,13 +278,9 @@ ISR(SPI_STC_vect) {
 
 
 void loop() {
-//    if (isController == false) {
-//      isController = true;
-//      pp->update();
-//      delayMicroseconds(1000); // ここで待機する間に割り込みでSPI受信
-//      isController = false;
-//    }
-#if 0 //def DEBUG
+    pp->update();
+
+#if 0
     volatile sw_data_t & sw_data = pp->data();
     for (int i=0; i < 6; i++){  
         unsigned char b = sw_data.buf[i];
