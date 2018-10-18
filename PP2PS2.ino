@@ -53,9 +53,8 @@ int ss_pin = 5; // ソフトウェア読み取りでは使わない
 
 
 PrecisionPro * pp;
-
-bool isController = false;
-
+unsigned long clock_msec = 0;
+bool read_pp;
 
 void oneclock()
 {
@@ -276,13 +275,20 @@ ISR(SPI_STC_vect) {
 #ifdef DEBUG
     if (logCount < MAX_LOG_SIZE) {datLog[logCount] = DAT;}
 #endif
-    if (continueCom) {acknowledge();}
+    if (continueCom) {
+      acknowledge();
+    } else {
+      clock_msec = micros() + 8000;
+      read_pp = false;
+    }
 }
 
 
 void loop() {
+  if (clock_msec <= micros() && read_pp == false) {
     pp->update();
-
+    read_pp = true;
+  }
 #if 0
     volatile sw_data_t & sw_data = pp->data();
     for (int i=0; i < 6; i++){  
