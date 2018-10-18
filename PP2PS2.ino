@@ -1,13 +1,13 @@
-// SPI test PS2: Master, Arduino: Slave (ANALOG MODE)
+// PP2PS2: SideWinder Precision Pro to PlayStation2 Adapter
 //
-// Copyright (c) 2015 Kazumasa ISE
+// Based on code by Copyright (c) 2015 Kazumasa ISE
 // Released under the MIT license
 // http://opensource.org/licenses/mit-license.php
 #include "PrecisionPro.h"
 
 #include <SPI.h>
 #include <util/delay.h>
-#define DEBUG
+//#define DEBUG
 #define ACK_WAIT 0.5
 #define ACK 9
 #define SET_ACK_LOW (PORTB &= ~B00000010)
@@ -85,7 +85,6 @@ void setup() {
 
     pp = new PrecisionPro(trigger_pin, clear_pin, mosi_pin, sck_pin, ss_pin);
     pp->init();
-//    digitalWrite(PIN_CLEAR, HIGH);
 }
 
 #define DS_SELECT   pp->c()
@@ -195,20 +194,20 @@ inline byte dat(const byte CMD[], byte i) {
     case READ_DATA:
         return readDataResponse(i);
     case CONFIG_MODE:
-    isConfigMode = (CMD[3] == 0x01);
+        isConfigMode = (CMD[3] == 0x01);
         return readDataResponse(i);
     case SET_MODE_AND_LOCK:
-    isAnalogMode = (CMD[3] == 0x01);
+        isAnalogMode = (CMD[3] == 0x01);
         return setModeAndLockResponse(i);
     case QUERY_MODEL_AND_MODE:
         return queryModelAndModeResponse(i);
     case UNKNOWN_COMMAND_46:
-    unknownFlag = (CMD[3] == 0x01);
+        unknownFlag = (CMD[3] == 0x01);
         return unknownCommand46Response(i);
     case UNKNOWN_COMMAND_47:
         return unknownCommand47Response(i);
     case UNKNOWN_COMMAND_4C:
-    unknownFlag = (CMD[3] == 0x01);
+        unknownFlag = (CMD[3] == 0x01);
         return unknownCommand4CResponse(i);
     case VIBRATION_ENABLE:
         return vibrationEnableResponse(i);
@@ -345,5 +344,4 @@ void loop() {
         }
     }
 #endif
-    //delay(250);
 }
