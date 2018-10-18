@@ -111,14 +111,14 @@ inline byte sw1()
   byte right = (hat >= 2) && (hat <= 4);
   byte down = (hat >= 4) && (hat <= 6);
   byte left = (hat >= 6) && (hat <= 8);
-  return (DS_SELECT | (DS_START << 3) |
+  return ~(DS_SELECT | (DS_START << 3) |
     (up << 4) | (right << 5) | (down << 6) | (left << 7) );
 }
 
 
 inline byte sw2()
 {
-  return ~(DS_L2 | (DS_R2 << 1) | (DS_L1 << 2) | (DS_L2 << 3) |
+  return ~(DS_L2 | (DS_R2 << 1) | (DS_L1 << 2) | (DS_R1 << 3) |
     (DS_TRIANGLE << 4) | (DS_CIRCLE << 5) | (DS_CROSS << 6) | (DS_SQUARE << 7));
 }
 
