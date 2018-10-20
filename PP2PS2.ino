@@ -4,6 +4,7 @@
 // Released under the MIT license
 // http://opensource.org/licenses/mit-license.php
 #include "PrecisionPro.h"
+#include "PWM.h"
 
 #include <SPI.h>
 #include <util/delay.h>
@@ -47,6 +48,11 @@ int ss_pin = 5;
 PrecisionPro * pp;
 unsigned long clock_msec = 0;
 bool read_pp;
+
+PWM up_key;
+PWM down_key;
+PWM left_key;
+PWM right_key;
 
 void oneclock()
 {
@@ -97,10 +103,10 @@ void setup() {
 inline byte sw1()
 {
   byte hat = pp->hat_switch();
-  byte up = (hat == 1) || (hat == 2) || (hat == 8);
-  byte right = (hat >= 2) && (hat <= 4);
-  byte down = (hat >= 4) && (hat <= 6);
-  byte left = (hat >= 6) && (hat <= 8);
+  byte up = (hat == 1) || (hat == 2) || (hat == 8) || up_key.update();
+  byte right = (hat >= 2) && (hat <= 4) || right_key.update();
+  byte down = (hat >= 4) && (hat <= 6) || down_key.update();
+  byte left = (hat >= 6) && (hat <= 8) || left_key.update();
   return ~(DS_SELECT | (DS_START << 3) |
     (up << 4) | (right << 5) | (down << 6) | (left << 7) );
 }
@@ -119,15 +125,15 @@ inline byte readDataResponse(byte i) {
     case 1: return isConfigMode ? 0xF3 : (isAnalogMode ? 0x73 : 0x41);
     case 3: return sw1();
     case 4: return sw2();
-    case 5: 
-      return pp->rudder()*4; //RH;
-    case 6: 
-      return pp->throttle()*2; //RV;
-    case 7: 
-      return pp->x()/4; // LH
-    case 8: 
-      return pp->y()/4; // LV
-    default: 
+    case 5:
+      return RH; //pp->rudder()*4; //RH;
+    case 6:
+      return RV; //pp->throttle()*2; //RV;
+    case 7:
+      return LH; //pp->x()/4; // LH
+    case 8:
+      return LV; //pp->y()/4; // LV
+    default:
       return DAT[i];
     }
 }
@@ -274,15 +280,37 @@ ISR(SPI_STC_vect) {
     }
 }
 
+const int threshold = 16;
 
 void loop() {
   if (clock_msec <= micros() && read_pp == false) {
     pp->update();
     read_pp = true;
+    int x = (pp->x() / 4) - 0x80;
+    if (abs(x) < threshold) { x = 0; }
+    if (x == 0) {
+        right_key.set_value(0);
+        left_key.set_value(0);
+    } else if (x > 0) {
+        right_key.set_value(x);
+    } else {
+        left_key.set_value(-x);
+    }
+    
+    int y = (pp->y() / 4) - 0x80;
+    if (abs(y) < threshold) { y = 0; } 
+    if (y == 0) {
+        up_key.set_value(0);
+        down_key.set_value(0);
+    } else if (y > 0) {
+        down_key.set_value(y);
+    } else {
+        up_key.set_value(-y);
+    }
   }
 #if 0
     volatile sw_data_t & sw_data = pp->data();
-    for (int i=0; i < 6; i++){  
+    for (int i=0; i < 6; i++){
         unsigned char b = sw_data.buf[i];
         if (b < 16) {
           Serial.print("0");
@@ -290,19 +318,19 @@ void loop() {
         Serial.print(b, HEX);
         Serial.print(":");
     }
-  
+
     Serial.print("  btns:");
     Serial.print(sw_data.btn_fire);
     Serial.print(sw_data.btn_top);
     Serial.print(sw_data.btn_top_up);
     Serial.print(sw_data.btn_top_down);
     Serial.print(":");
-  
+
     Serial.print(sw_data.btn_a);
     Serial.print(sw_data.btn_b);
     Serial.print(sw_data.btn_c);
     Serial.print(sw_data.btn_d);
-  
+
     Serial.print("; (");
     Serial.print(sw_data.x/4);
     Serial.print(", ");
