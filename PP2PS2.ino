@@ -7,7 +7,9 @@
 
 #include <SPI.h>
 #include <util/delay.h>
+
 //#define DEBUG
+
 #define ACK_WAIT 0.5
 #define ACK 9
 #define SET_ACK_LOW (PORTB &= ~B00000010)
@@ -33,7 +35,6 @@ volatile byte RV = 0x80;
 volatile byte LH = 0x80;
 volatile byte LV = 0x80;
 
-#if 1
 // Arduino Nano
 int mosi_pin = 3;
 int sck_pin  = 2;  // 割り込みピン(2 or 3)であること！
@@ -41,15 +42,6 @@ int trigger_pin = 4;
 int check_pin = 5;
 int clear_pin = 5;
 int ss_pin = 5;
-#else
-// Arduino Pro Mini
-int mosi_pin = 9;
-int sck_pin  = 2;  // 割り込みピン(2 or 3)であること！
-int trigger_pin = 8;
-int check_pin = 5;
-int clear_pin = 5; // ソフトウェア読み取りでは使わない
-int ss_pin = 5; // ソフトウェア読み取りでは使わない
-#endif
 
 
 PrecisionPro * pp;
