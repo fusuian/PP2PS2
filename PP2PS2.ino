@@ -85,20 +85,18 @@ void setup() {
     pp->init();
 }
 
-#define DS_SELECT   pp->c()
-//(pp->shift() & pp->top_up())
-#define DS_START    pp->b()
-//(pp->shift() & pp->top_down())
+#define DS_SELECT   (pp->shift() & pp->top_up())
+#define DS_START    (pp->shift() & pp->top_down())
 #define DS_CROSS  pp->fire()
 #define DS_CIRCLE  pp->top()
 #define DS_TRIANGLE  pp->top_up()
 #define DS_SQUARE  pp->top_down()
 
 
-#define DS_L1  pp->d()
-#define DS_L2  0 //pp->d()
+#define DS_L1  pp->c()
+#define DS_L2  pp->d()
 #define DS_R1  pp->a()
-#define DS_R2  0 //pp->a()
+#define DS_R2  pp->b()
 
 inline byte sw1()
 {
