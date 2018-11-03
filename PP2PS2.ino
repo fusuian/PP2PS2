@@ -3,13 +3,14 @@
 // Based on code by Copyright (c) 2015 Kazumasa ISE
 // Released under the MIT license
 // http://opensource.org/licenses/mit-license.php
+#include <SPI.h>
+#include <util/delay.h>
+#include "FastRunningMedian.h"
 #include "PrecisionPro.h"
 #include "PWM.h"
 
-#include <SPI.h>
-#include <util/delay.h>
 
-//#define DEBUG
+#define DEBUG
 
 #define ACK_WAIT 0.5
 #define ACK 9
@@ -48,6 +49,9 @@ int ss_pin = 5;
 PrecisionPro * pp;
 unsigned long clock_msec = 0;
 bool read_pp;
+const byte buflen = 15;
+FastRunningMedian<int, buflen, 0> xMedian;
+FastRunningMedian<int, buflen, 0> yMedian;
 
 PWM up_key;
 PWM down_key;
@@ -285,6 +289,8 @@ void loop() {
     pp->update();
     read_pp = true;
     int x = (pp->x() / 4) - 0x80;
+    xMedian.addValue(x);
+    x = xMedian.getMedian();
     if (abs(x) < threshold) { x = 0; }
     if (x == 0) {
         right_key.set_value(0);
@@ -296,6 +302,8 @@ void loop() {
     }
     
     int y = (pp->y() / 4) - 0x80;
+    yMedian.addValue(y);
+    y = yMedian.getMedian();
     if (abs(y) < threshold) { y = 0; } 
     if (y == 0) {
         up_key.set_value(0);
