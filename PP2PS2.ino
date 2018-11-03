@@ -38,12 +38,9 @@ volatile byte LH = 0x80;
 volatile byte LV = 0x80;
 
 // Arduino Nano
-int mosi_pin = 3;
+int mosi_pin = 4;
 int sck_pin  = 2;  // 割り込みピン(2 or 3)であること！
-int trigger_pin = 4;
-int check_pin = 5;
-int clear_pin = 5;
-int ss_pin = 5;
+int trigger_pin = 5;
 
 
 PrecisionPro * pp;
@@ -85,7 +82,7 @@ void setup() {
     Serial.begin(57600);
 #endif
 
-    pp = new PrecisionPro(trigger_pin, clear_pin, mosi_pin, sck_pin, ss_pin);
+    pp = new PrecisionPro(trigger_pin, mosi_pin, sck_pin);
     pp->init();
 }
 

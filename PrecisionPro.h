@@ -1,19 +1,7 @@
 #ifndef _PRECISIONPRO_
 #define _PRECISIONPRO_
 
-#define INT0_READ
-
-#ifndef INT0_READ
-#include <SPI.h>
-#endif
 #include "portmacro.h"
-
-// SPI pins (Arduino Nano)
-// SCK  D13 // -> Game port 2 // pull up
-// MISO D12 // NC
-// MOSI D11 // -> Game port 7 // pull up
-// SS   D10 // <- clear_pin (Any GPIO pin)
-// trigger_pin (Any GPIO pin) -> Game port 3
 
 // sw_data_t from https://github.com/MaZderMind/SidewinderInterface
 //
@@ -57,8 +45,8 @@ typedef union
 } sw_data_t;
 
 
-uint8_t reg_data[50];
-uint8_t *pdata;
+volatile byte reg_data[50];
+volatile byte *pdata;
 void oneclock();
 
 
@@ -68,64 +56,38 @@ class PrecisionPro
   private:
     int mosi_pin;
     int sck_pin;
-    int ss_pin;
     int trigger_pin;
-    int clear_pin;
 
     volatile sw_data_t sw_data;
     volatile byte pos;
 
-  
-
   public:
 
-  PrecisionPro(int pin_trigger, int pin_clear, int mosi=MOSI, int sck=SCK, int ss=SS)
-  {
-    mosi_pin = mosi;
-    sck_pin = sck;
-    ss_pin = ss;
-    clear_pin = pin_clear;
-    trigger_pin = pin_trigger;
-  }
-
+  PrecisionPro(int pin_trigger, int mosi, int sck):
+    trigger_pin(pin_trigger), mosi_pin(mosi), sck_pin(sck){}
 
 
   void init()
   {
     pinMode(trigger_pin, OUTPUT);
     portOn(trigger_pin);
-#ifdef INT0_READ
     pinMode(mosi_pin, INPUT_PULLUP);
     pinMode(sck_pin, INPUT_PULLUP);
     attachInterrupt(0, oneclock, RISING);
-#else
-    pinMode(clear_pin,   OUTPUT);
-    digitalWrite(clear_pin, LOW);
-
-    // SPI スレーブモード設定
-    pinMode(mosi_pin, INPUT);
-    pinMode(sck_pin, INPUT);
-    pinMode(ss_pin,  INPUT);
-
-    SPCR |= _BV(SPE); // set slave mode
-    SPI.setBitOrder(LSBFIRST);
-    SPI.attachInterrupt();
-#endif
   }
 
 
   void update()
   {
-    pdata = reg_data;    
+    pdata = reg_data;
     portOff(trigger_pin);
-#ifdef INT0_READ
     delayMicroseconds(1000);
 
     pos = 0;
     portOn(trigger_pin);
 
-    uint8_t * pd = reg_data+1;
-    uint8_t spi;
+    byte * pd = reg_data+1;
+    byte spi;
     for (int i = 0; i < 6; i++) {
       spi = 0;
       for (int j = 0; j < 8; j++, pd++) {
@@ -135,24 +97,10 @@ class PrecisionPro
       add_buf(spi);
     }
 
-#else
-    delayMicroseconds(500);
-    // clear_pinを使ってSSをHIGHにして、SPIのシフトレジスタをクリア
-    // （これをしないと入力信号がずれていく）
-    // （SSは入力ピンになっているので、SS自体を直接HIGH/LOWにはできない！）
-    portOn(clear_pin);
-    delayMicroseconds(100);
-    portOff(clear_pin);
-    delayMicroseconds(400);
-
-    pos = 0;
-    portOn(trigger_pin);
-    // trigger_pinをHIGHにしたあと、呼び出し側で1000us待つと結果がPrecisionPro::dataに反映する
-#endif
   }
 
 
-  void add_buf(uint8_t spdr) {
+  void add_buf(byte spdr) {
     sw_data.buf[pos++] = spdr;
   }
 
@@ -220,9 +168,6 @@ class PrecisionPro
   int rudder() {
     return sw_data.r;
   }
-
-
-
 
 };
 
