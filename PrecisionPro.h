@@ -69,11 +69,18 @@ class PrecisionPro
 
   void init()
   {
+#ifdef DEBUG
+    if ((sck_pin == 2 || sck_pin == 3) == false) {
+      Serial.println(F("error!: sck_pin must be 2 or 3"));
+      while (1) ;
+    }
+#endif
+
     pinMode(trigger_pin, OUTPUT);
     portOn(trigger_pin);
     pinMode(mosi_pin, INPUT_PULLUP);
     pinMode(sck_pin, INPUT_PULLUP);
-    attachInterrupt(0, oneclock, RISING);
+    attachInterrupt(sck_pin - 2, oneclock, RISING);
   }
 
 
