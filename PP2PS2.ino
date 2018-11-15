@@ -71,7 +71,9 @@ PWM right_key;
 
 void oneclock()
 {
+  portOn(A5);
   *pdata++ = PIN(mosi_pin);
+  portOff(A5);
 }
 
 
@@ -95,6 +97,7 @@ void setup() {
 #ifdef DEBUG
     Serial.begin(115200);
 #endif
+    pinMode(A5, OUTPUT);
 
     pp = new PrecisionPro(trigger_pin, mosi_pin, sck_pin);
     pp->init();
