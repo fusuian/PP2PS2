@@ -12,6 +12,20 @@
 
 #define DEBUG
 
+#define DS_SELECT   pp->d()
+#define DS_START    pp->a()
+
+#define DS_CROSS  pp->fire()
+#define DS_CIRCLE  pp->top()
+#define DS_TRIANGLE  pp->top_up()
+#define DS_SQUARE  pp->top_down()
+
+#define DS_L1  pp->c()
+#define DS_R1  pp->b()
+#define DS_L2  1 // pp->d()
+#define DS_R2  1 // pp->a()
+
+
 #define ACK_WAIT 0.5
 #define ACK 9
 #define SET_ACK_LOW (PORTB &= ~B00000010)
@@ -79,25 +93,13 @@ void setup() {
     pinMode(ACK, OUTPUT);
     digitalWrite(ACK, HIGH);
 #ifdef DEBUG
-    Serial.begin(57600);
+    Serial.begin(115200);
 #endif
 
     pp = new PrecisionPro(trigger_pin, mosi_pin, sck_pin);
     pp->init();
 }
 
-#define DS_SELECT   (pp->shift() & pp->top_up())
-#define DS_START    (pp->shift() & pp->top_down())
-#define DS_CROSS  pp->fire()
-#define DS_CIRCLE  pp->top()
-#define DS_TRIANGLE  pp->top_up()
-#define DS_SQUARE  pp->top_down()
-
-
-#define DS_L1  pp->c()
-#define DS_L2  pp->d()
-#define DS_R1  pp->a()
-#define DS_R2  pp->b()
 
 inline byte sw1()
 {
