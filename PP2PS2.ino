@@ -56,6 +56,9 @@ int mosi_pin = 4;
 int sck_pin  = 2;  // 割り込みピン(2 or 3)であること！
 int trigger_pin = 5;
 
+const byte left_lite_pin  = A0;
+const byte right_lite_pin = A1;
+
 
 PrecisionPro * pp;
 unsigned long clock_msec = 0;
@@ -98,6 +101,8 @@ void setup() {
     Serial.begin(115200);
 #endif
     pinMode(A5, OUTPUT);
+    pinMode(left_lite_pin, OUTPUT);
+    pinMode(right_lite_pin, OUTPUT);
 
     pp = new PrecisionPro(trigger_pin, mosi_pin, sck_pin);
     pp->init();
@@ -315,6 +320,9 @@ void loop() {
     } else {
         up_key.set_value(-y);
     }
+
+    portWrite(left_lite_pin, DS_CIRCLE);
+    portWrite(right_lite_pin, DS_CROSS);
   }
 #if 0
     volatile sw_data_t & sw_data = pp->data();

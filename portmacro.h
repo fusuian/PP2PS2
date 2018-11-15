@@ -15,8 +15,8 @@
 
 #define portOn(p)  ( PORT(p) |=  _BV(REG(p)) )
 #define portOff(p) ( PORT(p) &= ~_BV(REG(p)) )
+#define portWrite(p, v) ( (v > 0)? portOn(p) : portOff(p) )
 
 #define isPin(p)  ( (PIN(p) & _BV(REG(p))) == 0 )
 
 #endif // __PORTMACRO_H__
-
