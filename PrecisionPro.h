@@ -92,6 +92,7 @@ class PrecisionPro
 
     pos = 0;
     portOn(trigger_pin);
+    delayMicroseconds(1000); // この間に割り込みでスティックからのデータを読んでいる
 
     byte * pd = reg_data+1;
     byte spi;
