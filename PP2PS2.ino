@@ -42,10 +42,46 @@ const byte buflen = 15;
 FastRunningMedian<int, buflen, 0> xMedian;
 FastRunningMedian<int, buflen, 0> yMedian;
 
-PWM up_key;
-PWM down_key;
-PWM left_key;
-PWM right_key;
+class PP2DS2Talker : public DualShock2Talker
+{
+  public:
+  PP2DS2Talker(){}
+  ~PP2DS2Talker(){}
+  
+  byte sw1()
+  {
+    byte hat = pp->hat_switch();
+    byte up = (hat == 1) || (hat == 2) || (hat == 8) || up_key.update();
+    byte right = (hat >= 2) && (hat <= 4) || right_key.update();
+    byte down = (hat >= 4) && (hat <= 6) || down_key.update();
+    byte left = (hat >= 6) && (hat <= 8) || left_key.update();
+    return ~(DS_SELECT | (DS_START << 3) |
+      (up << 4) | (right << 5) | (down << 6) | (left << 7) );
+  }
+
+
+  byte sw2()
+  {
+    return ~(DS_L2 | (DS_R2 << 1) | (DS_L1 << 2) | (DS_R1 << 3) |
+      (DS_TRIANGLE << 4) | (DS_CIRCLE << 5) | (DS_CROSS << 6) | (DS_SQUARE << 7));
+  }
+
+
+  void set_up_key(byte value) { up_key.set_value(value); }
+  void set_down_key(byte value) { down_key.set_value(value); }
+  void set_left_key(byte value) { left_key.set_value(value); }
+  void set_right_key(byte value) { right_key.set_value(value); }
+
+private:
+  PWM up_key;
+  PWM down_key;
+  PWM left_key;
+  PWM right_key;
+
+
+};
+
+PP2DS2Talker * ds2talker;
 
 void oneclock()
 {
@@ -58,7 +94,6 @@ void oneclock()
 
 
 void setup() {
-    ds2talker_setup();
 #ifdef DEBUG
     Serial.begin(115200);
 #endif
@@ -66,28 +101,13 @@ void setup() {
     pinMode(left_lite_pin, OUTPUT);
     pinMode(right_lite_pin, OUTPUT);
 
+    ds2talker = new PP2DS2Talker();
+    ds2talker->setup();
     pp = new PrecisionPro(trigger_pin, mosi_pin, sck_pin);
     pp->init();
 }
 
 
-byte sw1()
-{
-  byte hat = pp->hat_switch();
-  byte up = (hat == 1) || (hat == 2) || (hat == 8) || up_key.update();
-  byte right = (hat >= 2) && (hat <= 4) || right_key.update();
-  byte down = (hat >= 4) && (hat <= 6) || down_key.update();
-  byte left = (hat >= 6) && (hat <= 8) || left_key.update();
-  return ~(DS_SELECT | (DS_START << 3) |
-    (up << 4) | (right << 5) | (down << 6) | (left << 7) );
-}
-
-
-byte sw2()
-{
-  return ~(DS_L2 | (DS_R2 << 1) | (DS_L1 << 2) | (DS_R1 << 3) |
-    (DS_TRIANGLE << 4) | (DS_CIRCLE << 5) | (DS_CROSS << 6) | (DS_SQUARE << 7));
-}
 
 
 const int threshold = 16;
@@ -101,12 +121,12 @@ void loop() {
     x = xMedian.getMedian();
     if (abs(x) < threshold) { x = 0; }
     if (x == 0) {
-        right_key.set_value(0);
-        left_key.set_value(0);
+        ds2talker->set_right_key(0);
+        ds2talker->set_left_key(0);
     } else if (x > 0) {
-        right_key.set_value(x);
+        ds2talker->set_right_key(x);
     } else {
-        left_key.set_value(-x);
+        ds2talker->set_left_key(-x);
     }
 
     int y = (pp->y() / 4) - 0x80;
@@ -114,12 +134,12 @@ void loop() {
     y = yMedian.getMedian();
     if (abs(y) < threshold) { y = 0; }
     if (y == 0) {
-        up_key.set_value(0);
-        down_key.set_value(0);
+        ds2talker->set_up_key(0);
+        ds2talker->set_down_key(0);
     } else if (y > 0) {
-        down_key.set_value(y);
+        ds2talker->set_down_key(y);
     } else {
-        up_key.set_value(-y);
+        ds2talker->set_up_key(-y);
     }
 
     portWrite(left_lite_pin, DS_CIRCLE);
@@ -163,4 +183,63 @@ void loop() {
 #ifdef DEBUG
   ds2talker_debug();
 #endif
+}
+
+
+#ifdef DEBUG
+#define LINE_FEED 0xAA
+#define MAX_LOG_SIZE 60
+volatile byte cmdLog[MAX_LOG_SIZE] = {0};
+volatile byte datLog[MAX_LOG_SIZE] = {0};
+volatile int logCount = 0;
+#endif
+
+
+ISR(SPI_STC_vect) {
+    static byte ID = 0x41;
+    static byte CMD[CMD_BYTES] = {0};
+    static byte cmdCount = 0;
+    bool continueCom = false;
+    CMD[cmdCount] = SPDR;
+#ifdef DEBUG
+    if (logCount < MAX_LOG_SIZE) {cmdLog[logCount++] = CMD[cmdCount];}
+#endif
+    const byte numOfCmd = 3+2*(ID & 0x0F);
+    // Check CMD
+    if (cmdCount == 0) {
+        if (CMD[cmdCount] == 0x01) {
+            continueCom = true;
+        }
+    } else if (cmdCount == 1) {
+        if (CMD[cmdCount] == 0x01) {
+            cmdCount = 0; // Reset count
+            continueCom = true;
+        } else if ((CMD[cmdCount] & 0x40) == 0x40) {
+            continueCom = true;
+        }
+    } else if (cmdCount == 5) {
+        if ((CMD[1] == READ_DATA) && (CMD[cmdCount] == 0x01)) {
+            cmdCount = 0; // Reset count
+        }
+        continueCom = true;
+    } else if (cmdCount < numOfCmd-1) {
+        continueCom = true;
+    }
+#ifdef DEBUG
+    if (!continueCom && (logCount < MAX_LOG_SIZE)) {cmdLog[logCount++] = LINE_FEED;}
+#endif
+    // Set next DAT
+    cmdCount = continueCom ? cmdCount+1 : 0;
+    const byte DAT = ds2talker->dat(CMD, cmdCount);
+    if (cmdCount == 1) {ID = DAT;}
+    SPDR = DAT;
+#ifdef DEBUG
+    if (logCount < MAX_LOG_SIZE) {datLog[logCount] = DAT;}
+#endif
+    if (continueCom) {
+      ds2talker->acknowledge();
+    } else {
+      clock_msec = micros() + 8000;
+      read_pp = false;
+    }
 }
