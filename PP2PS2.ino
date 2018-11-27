@@ -121,8 +121,8 @@ void loop() {
     Serial.println("");
 
     int x = (pp->x() / 4) - 0x80;
-    xMedian.addValue(x);
-    x = xMedian.getMedian();
+//    xMedian.addValue(x);
+//    x = xMedian.getMedian();
     if (abs(x) < threshold) { x = 0; }
     if (x == 0) {
         ds2talker->set_right_key(0);
@@ -134,8 +134,8 @@ void loop() {
     }
 
     int y = (pp->y() / 4) - 0x80;
-    yMedian.addValue(y);
-    y = yMedian.getMedian();
+//    yMedian.addValue(y);
+//    y = yMedian.getMedian();
     if (abs(y) < threshold) { y = 0; }
     if (y == 0) {
         ds2talker->set_up_key(0);
