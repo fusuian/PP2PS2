@@ -94,9 +94,7 @@ void oneclock()
 
 
 void setup() {
-#ifdef DEBUG
     Serial.begin(115200);
-#endif
     pinMode(A5, OUTPUT);
     pinMode(left_lite_pin, OUTPUT);
     pinMode(right_lite_pin, OUTPUT);
@@ -116,6 +114,12 @@ void loop() {
   if (clock_msec <= micros() && read_pp == false) {
     pp->update();
     read_pp = true;
+    
+    Serial.print(pp->x());
+    Serial.print(", ");
+    Serial.print(pp->y());
+    Serial.println("");
+
     int x = (pp->x() / 4) - 0x80;
     xMedian.addValue(x);
     x = xMedian.getMedian();
