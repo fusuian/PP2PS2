@@ -101,7 +101,7 @@ void setup() {
 
 
 
-const int threshold = 16;
+const int threshold = 8;
 
 void loop() {
     if (clock_msec <= micros() && read_pp == false) {
