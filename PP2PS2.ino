@@ -3,6 +3,7 @@
 // Based on code by Copyright (c) 2015 Kazumasa ISE
 // Released under the MIT license
 // http://opensource.org/licenses/mit-license.php
+
 #include <SPI.h>
 #include <util/delay.h>
 #include "PrecisionPro.h"
@@ -42,49 +43,44 @@ const byte buflen = 15;
 class PP2DS2Talker : public DualShock2Talker
 {
   public:
-  PP2DS2Talker(){}
-  ~PP2DS2Talker(){}
-  
-  byte sw1()
-  {
-    byte hat = pp->hat_switch();
-    byte up = (hat == 1) || (hat == 2) || (hat == 8) || up_key.update();
-    byte right = (hat >= 2) && (hat <= 4) || right_key.update();
-    byte down = (hat >= 4) && (hat <= 6) || down_key.update();
-    byte left = (hat >= 6) && (hat <= 8) || left_key.update();
-    return ~(DS_SELECT | (DS_START << 3) |
-      (up << 4) | (right << 5) | (down << 6) | (left << 7) );
-  }
+    PP2DS2Talker(){}
+    ~PP2DS2Talker(){}
+
+    byte sw1() {
+      byte hat = pp->hat_switch();
+      byte up = (hat == 1) || (hat == 2) || (hat == 8) || up_key.update();
+      byte right = (hat >= 2) && (hat <= 4) || right_key.update();
+      byte down = (hat >= 4) && (hat <= 6) || down_key.update();
+      byte left = (hat >= 6) && (hat <= 8) || left_key.update();
+      return ~(DS_SELECT | (DS_START << 3) |
+        (up << 4) | (right << 5) | (down << 6) | (left << 7) );
+    }
 
 
-  byte sw2()
-  {
-    return ~(DS_L2 | (DS_R2 << 1) | (DS_L1 << 2) | (DS_R1 << 3) |
-      (DS_TRIANGLE << 4) | (DS_CIRCLE << 5) | (DS_CROSS << 6) | (DS_SQUARE << 7));
-  }
+    byte sw2() {
+        return ~(DS_L2 | (DS_R2 << 1) | (DS_L1 << 2) | (DS_R1 << 3) |
+          (DS_TRIANGLE << 4) | (DS_CIRCLE << 5) | (DS_CROSS << 6) | (DS_SQUARE << 7));
+    }
 
 
-  void set_up_key(byte value) { up_key.set_value(value); }
-  void set_down_key(byte value) { down_key.set_value(value); }
-  void set_left_key(byte value) { left_key.set_value(value); }
-  void set_right_key(byte value) { right_key.set_value(value); }
+    void set_up_key(byte value) { up_key.set_value(value); }
+    void set_down_key(byte value) { down_key.set_value(value); }
+    void set_left_key(byte value) { left_key.set_value(value); }
+    void set_right_key(byte value) { right_key.set_value(value); }
 
-private:
-  PWM up_key;
-  PWM down_key;
-  PWM left_key;
-  PWM right_key;
-
-
+  private:
+    PWM up_key;
+    PWM down_key;
+    PWM left_key;
+    PWM right_key;
 };
 
 PP2DS2Talker * ds2talker;
 
-void oneclock()
-{
-  portOn(A5);
-  *pdata++ = PIN(mosi_pin);
-  portOff(A5);
+void oneclock() {
+    portOn(A5);
+    *pdata++ = PIN(mosi_pin);
+    portOff(A5);
 }
 
 
@@ -108,40 +104,41 @@ void setup() {
 const int threshold = 16;
 
 void loop() {
-  if (clock_msec <= micros() && read_pp == false) {
-    pp->update();
-    read_pp = true;
-    
-    Serial.print(pp->x());
-    Serial.print(", ");
-    Serial.print(pp->y());
-    Serial.println("");
+    if (clock_msec <= micros() && read_pp == false) {
+        pp->update();
+        read_pp = true;
+#if 0
+        Serial.print(pp->x());
+        Serial.print(", ");
+        Serial.print(pp->y());
+        Serial.println("");
+#endif
 
-    int x = (pp->x() / 4) - 0x80;
-    if (abs(x) < threshold) { x = 0; }
-    if (x == 0) {
-        ds2talker->set_right_key(0);
-        ds2talker->set_left_key(0);
-    } else if (x > 0) {
-        ds2talker->set_right_key(x);
-    } else {
-        ds2talker->set_left_key(-x);
+        int x = (pp->x() / 4) - 0x80;
+        if (abs(x) < threshold) { x = 0; }
+        if (x == 0) {
+            ds2talker->set_right_key(0);
+            ds2talker->set_left_key(0);
+        } else if (x > 0) {
+            ds2talker->set_right_key(x);
+        } else {
+            ds2talker->set_left_key(-x);
+        }
+
+        int y = (pp->y() / 4) - 0x80;
+        if (abs(y) < threshold) { y = 0; }
+        if (y == 0) {
+            ds2talker->set_up_key(0);
+            ds2talker->set_down_key(0);
+        } else if (y > 0) {
+            ds2talker->set_down_key(y);
+        } else {
+            ds2talker->set_up_key(-y);
+        }
+
+        portWrite(left_lite_pin, DS_CIRCLE);
+        portWrite(right_lite_pin, DS_CROSS);
     }
-
-    int y = (pp->y() / 4) - 0x80;
-    if (abs(y) < threshold) { y = 0; }
-    if (y == 0) {
-        ds2talker->set_up_key(0);
-        ds2talker->set_down_key(0);
-    } else if (y > 0) {
-        ds2talker->set_down_key(y);
-    } else {
-        ds2talker->set_up_key(-y);
-    }
-
-    portWrite(left_lite_pin, DS_CIRCLE);
-    portWrite(right_lite_pin, DS_CROSS);
-  }
 #if 0
     volatile sw_data_t & sw_data = pp->data();
     for (int i=0; i < 6; i++){
@@ -178,7 +175,7 @@ void loop() {
     Serial.println();
 #endif
 #ifdef DEBUG
-  ds2talker_debug();
+    ds2talker_debug();
 #endif
 }
 
@@ -234,9 +231,9 @@ ISR(SPI_STC_vect) {
     if (logCount < MAX_LOG_SIZE) {datLog[logCount] = DAT;}
 #endif
     if (continueCom) {
-      ds2talker->acknowledge();
+        ds2talker->acknowledge();
     } else {
-      clock_msec = micros() + 8000;
-      read_pp = false;
+        clock_msec = micros() + 8000;
+        read_pp = false;
     }
 }

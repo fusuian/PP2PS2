@@ -5,12 +5,11 @@ extern unsigned long clock_msec;
 extern bool read_pp;
 
 
-void DualShock2Talker::setup()
-{
+void DualShock2Talker::setup() {
     isAnalogMode = false;
     isConfigMode = false;
     unknownFlag = false;
-    
+
     // SPI setup
     SPI.setBitOrder(LSBFIRST);
     SPI.setDataMode(SPI_MODE3);
@@ -31,8 +30,7 @@ void DualShock2Talker::setup()
 
 
 
-void DualShock2Talker::debug()
-{
+void DualShock2Talker::debug() {
 #ifdef DEBUG
     if (logCount == MAX_LOG_SIZE) {
         logCount = 0;

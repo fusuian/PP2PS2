@@ -20,7 +20,7 @@
 
 class DualShock2Talker
 {
-public:
+  public:
     DualShock2Talker(){}
     ~DualShock2Talker(){}
     void setup();
@@ -65,7 +65,7 @@ public:
         SET_ACK_HIGH;
     }
 
-private:
+  private:
     volatile bool isAnalogMode;// = false;
     volatile bool isConfigMode;// = false;
     volatile bool unknownFlag;// = false;
@@ -136,9 +136,4 @@ private:
         const byte DAT[] = {0xFF, 0xF3, 0x5A, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
         return DAT[i];
     }
-
-
-
-
-
 };

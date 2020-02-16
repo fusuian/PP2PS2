@@ -67,8 +67,7 @@ class PrecisionPro
     trigger_pin(pin_trigger), mosi_pin(mosi), sck_pin(sck){}
 
 
-  void init()
-  {
+  void init() {
 #ifdef DEBUG
     if ((sck_pin == 2 || sck_pin == 3) == false) {
       Serial.println(F("error!: sck_pin must be 2 or 3"));
@@ -84,8 +83,7 @@ class PrecisionPro
   }
 
 
-  void update()
-  {
+  void update() {
     pdata = reg_data;
     portOff(trigger_pin);
     delayMicroseconds(1000);
