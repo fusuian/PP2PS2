@@ -5,7 +5,6 @@
 // http://opensource.org/licenses/mit-license.php
 #include <SPI.h>
 #include <util/delay.h>
-#include "FastRunningMedian.h"
 #include "PrecisionPro.h"
 #include "PWM.h"
 //#define DEBUG
@@ -39,8 +38,6 @@ PrecisionPro * pp;
 unsigned long clock_msec = 0;
 bool read_pp;
 const byte buflen = 15;
-FastRunningMedian<int, buflen, 0> xMedian;
-FastRunningMedian<int, buflen, 0> yMedian;
 
 class PP2DS2Talker : public DualShock2Talker
 {
@@ -121,8 +118,6 @@ void loop() {
     Serial.println("");
 
     int x = (pp->x() / 4) - 0x80;
-//    xMedian.addValue(x);
-//    x = xMedian.getMedian();
     if (abs(x) < threshold) { x = 0; }
     if (x == 0) {
         ds2talker->set_right_key(0);
@@ -134,8 +129,6 @@ void loop() {
     }
 
     int y = (pp->y() / 4) - 0x80;
-//    yMedian.addValue(y);
-//    y = yMedian.getMedian();
     if (abs(y) < threshold) { y = 0; }
     if (y == 0) {
         ds2talker->set_up_key(0);
