@@ -1,5 +1,7 @@
 // PP2PS2: SideWinder Precision Pro to PlayStation2 Adapter
 //
+// Copyright (c) 2019 ASAHI,Michiharu
+//
 // Based on code by Copyright (c) 2015 Kazumasa ISE
 // Released under the MIT license
 // http://opensource.org/licenses/mit-license.php
