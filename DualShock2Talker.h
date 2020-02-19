@@ -17,6 +17,8 @@
 #define VIBRATION_ENABLE 0x4D
 #define CMD_BYTES 9
 
+extern unsigned long clock_msec;
+extern bool read_pp;
 
 class DualShock2Talker
 {
