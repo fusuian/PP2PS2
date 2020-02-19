@@ -54,9 +54,10 @@ void setup() {
 
 
 void loop() {
-    if (clock_msec <= micros() && read_pp == false) {
+    if (ds2talker->isReady()) {
         pp->update();
-        read_pp = true;
+        ds2talker->listened();
+
 #if 0
         Serial.print(pp->x());
         Serial.print(", ");

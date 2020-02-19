@@ -75,9 +75,6 @@ volatile int logCount = 0;
 
 extern DualShock2Talker * ds2talker;
 
-unsigned long clock_msec = 0;
-bool read_pp;
-
 
 ISR(SPI_STC_vect) {
     static byte ID = 0x41;
@@ -123,7 +120,6 @@ ISR(SPI_STC_vect) {
     if (continueCom) {
         ds2talker->acknowledge();
     } else {
-        clock_msec = micros() + 8000;
-        read_pp = false;
+        ds2talker->standby();
     }
 }

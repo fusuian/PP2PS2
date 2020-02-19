@@ -2,7 +2,7 @@
 //
 // Copyright (c) 2019-2020 ASAHI,Michiharu
 //
-// Based on Rolling switch for PS2 by Kazumasa ISE
+// Based on Rolling switch for PS2
 // Copyright (c) 2015 Kazumasa ISE
 //
 // Released under the MIT license
@@ -24,8 +24,6 @@
 #define VIBRATION_ENABLE 0x4D
 #define CMD_BYTES 9
 
-extern unsigned long clock_msec;
-extern bool read_pp;
 
 class DualShock2Talker
 {
@@ -74,10 +72,28 @@ class DualShock2Talker
         SET_ACK_HIGH;
     }
 
+
+    inline void standby() {
+        clock_msec = micros() + 8000;
+        read_pp = false;
+    }
+
+
+    inline bool isReady() {
+        return clock_msec <= micros() && read_pp == false;
+    }
+
+    inline void listened() {
+        read_pp = true;
+    }
+
   private:
     volatile bool isAnalogMode;
     volatile bool isConfigMode;
     volatile bool unknownFlag;
+
+    volatile unsigned long clock_msec;
+    volatile bool read_pp;
 
     inline byte readDataResponse(byte i) {
         const byte DAT[] = {0xFF, 0x41, 0x5A, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
@@ -145,4 +161,6 @@ class DualShock2Talker
         const byte DAT[] = {0xFF, 0xF3, 0x5A, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
         return DAT[i];
     }
+
+
 };
