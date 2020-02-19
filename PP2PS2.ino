@@ -91,41 +91,6 @@ void loop() {
         portWrite(left_lite_pin, DS_CIRCLE);
         portWrite(right_lite_pin, DS_CROSS);
     }
-#if 0
-    volatile sw_data_t & sw_data = pp->data();
-    for (int i=0; i < 6; i++){
-        unsigned char b = sw_data.buf[i];
-        if (b < 16) {
-          Serial.print("0");
-        }
-        Serial.print(b, HEX);
-        Serial.print(":");
-    }
-
-    Serial.print("  btns:");
-    Serial.print(sw_data.btn_fire);
-    Serial.print(sw_data.btn_top);
-    Serial.print(sw_data.btn_top_up);
-    Serial.print(sw_data.btn_top_down);
-    Serial.print(":");
-
-    Serial.print(sw_data.btn_a);
-    Serial.print(sw_data.btn_b);
-    Serial.print(sw_data.btn_c);
-    Serial.print(sw_data.btn_d);
-
-    Serial.print("; (");
-    Serial.print(sw_data.x/4);
-    Serial.print(", ");
-    Serial.print(sw_data.y/4);
-    Serial.print("); rudder=");
-    Serial.print(sw_data.r*4);
-    Serial.print("; throttle=");
-    Serial.print(sw_data.m*2);
-    Serial.print("; HAT=");
-    Serial.print(sw_data.head);
-    Serial.println();
-#endif
 #ifdef DEBUG
     ds2talker_debug();
 #endif
