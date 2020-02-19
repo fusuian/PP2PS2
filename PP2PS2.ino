@@ -15,6 +15,8 @@
 
 #define DS_SELECT   pp->d()
 #define DS_START    pp->a()
+// the center threshold of analog stick (x and y axis)
+const int stick_center_threshold = 16;
 
 #define DS_CROSS  pp->fire()
 #define DS_CIRCLE  pp->top()
@@ -103,8 +105,6 @@ void setup() {
 
 
 
-const int threshold = 8;
-
 void loop() {
     if (clock_msec <= micros() && read_pp == false) {
         pp->update();
@@ -117,7 +117,7 @@ void loop() {
 #endif
 
         int x = (pp->x() / 4) - 0x80;
-        if (abs(x) < threshold) { x = 0; }
+        if (abs(x) < stick_center_threshold) { x = 0; }
         if (x == 0) {
             ds2talker->set_right_key(0);
             ds2talker->set_left_key(0);
@@ -128,7 +128,7 @@ void loop() {
         }
 
         int y = (pp->y() / 4) - 0x80;
-        if (abs(y) < threshold) { y = 0; }
+        if (abs(y) < stick_center_threshold) { y = 0; }
         if (y == 0) {
             ds2talker->set_up_key(0);
             ds2talker->set_down_key(0);
