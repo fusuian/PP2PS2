@@ -4,9 +4,6 @@
 #define SET_ACK_LOW (PORTB &= ~B00000010)
 #define SET_ACK_HIGH (PORTB |= B00000010)
 
-#define SW1 (PIND | B00000111)
-#define SW2 ((PINC << 2) | B00001111)
-
 #define READ_DATA 0x42
 #define CONFIG_MODE 0x43
 #define SET_MODE_AND_LOCK 0x44
@@ -68,9 +65,9 @@ class DualShock2Talker
     }
 
   private:
-    volatile bool isAnalogMode;// = false;
-    volatile bool isConfigMode;// = false;
-    volatile bool unknownFlag;// = false;
+    volatile bool isAnalogMode;
+    volatile bool isConfigMode;
+    volatile bool unknownFlag;
 
     inline byte readDataResponse(byte i) {
         const byte DAT[] = {0xFF, 0x41, 0x5A, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
@@ -79,13 +76,13 @@ class DualShock2Talker
         case 3: return sw1();
         case 4: return sw2();
         case 5:
-          return rh(); //pp->rudder()*4; //RH;
+          return rh();
         case 6:
-          return rv(); //pp->throttle()*2; //RV;
+          return rv();
         case 7:
-          return lh(); //pp->x()/4; // LH
+          return lh();
         case 8:
-          return lv(); //pp->y()/4; // LV
+          return lv();
         default:
           return DAT[i];
         }

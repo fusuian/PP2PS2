@@ -17,19 +17,19 @@
 const int stick_center_threshold = 16;
 
 
-// Arduino Nano
+// Arduino Pins for Precision Pro
 int sck_pin  = 2;  // 割り込みピン(2 or 3)であること！
 int mosi_pin = 4;
 int trigger_pin = 5;
 
+// LED (optional)
 const byte left_lite_pin  = A0;
 const byte right_lite_pin = A1;
 
 
 PrecisionPro * pp;
-const byte buflen = 15;
-
 PP2DS2Talker * ds2talker;
+
 
 void oneclock() {
     portOn(A5);
@@ -51,7 +51,6 @@ void setup() {
     ds2talker = new PP2DS2Talker(pp);
     ds2talker->setup();
 }
-
 
 
 
