@@ -1,8 +1,14 @@
+// PrecisionPro.h
+//
+// Copyright (c) 2019-2020 ASAHI,Michiharu
+//
+// Released under the MIT license
+// see http://opensource.org/licenses/mit-license.php
+
 #ifndef _PRECISIONPRO_
 #define _PRECISIONPRO_
 
 #include "portmacro.h"
-
 #include "sw_data_t.h"
 
 volatile byte reg_data[50];

@@ -1,3 +1,10 @@
+// PWM.h
+//
+// Copyright (c) 2019-2020 ASAHI,Michiharu
+//
+// Released under the MIT license
+// see http://opensource.org/licenses/mit-license.php
+
 #ifndef _PWM_H_
 #define _PWM_H_
 

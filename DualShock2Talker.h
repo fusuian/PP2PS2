@@ -1,3 +1,13 @@
+// DualShock2Talker.h: DualShock2 Emulator on Arduino
+//
+// Copyright (c) 2019-2020 ASAHI,Michiharu
+//
+// Based on Rolling switch for PS2 by Kazumasa ISE
+// Copyright (c) 2015 Kazumasa ISE
+//
+// Released under the MIT license
+// http://opensource.org/licenses/mit-license.php
+
 
 #define ACK_WAIT 0.5
 #define ACK 9

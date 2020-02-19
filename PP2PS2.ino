@@ -1,10 +1,9 @@
 // PP2PS2: SideWinder Precision Pro to PlayStation2 Adapter
 //
-// Copyright (c) 2019 ASAHI,Michiharu
+// Copyright (c) 2019-2020 ASAHI,Michiharu
 //
-// Based on code by Copyright (c) 2015 Kazumasa ISE
 // Released under the MIT license
-// http://opensource.org/licenses/mit-license.php
+// see http://opensource.org/licenses/mit-license.php
 
 #include <SPI.h>
 #include <util/delay.h>
@@ -18,8 +17,8 @@ const int stick_center_threshold = 16;
 
 
 // Arduino Pins for Precision Pro
-int sck_pin  = 2;  // 割り込みピン(2 or 3)であること！
-int mosi_pin = 4;
+int sck_pin     = 2;  // 割り込みピン(2 or 3)であること！
+int mosi_pin    = 4;
 int trigger_pin = 5;
 
 // LED (optional)

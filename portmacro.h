@@ -1,3 +1,10 @@
+// portmacro.h
+//
+// Copyright (c) 2020 ASAHI,Michiharu
+//
+// Released under the MIT license
+// see http://opensource.org/licenses/mit-license.php
+
 #ifndef __PORTMACRO_H__
 #define __PORTMACRO_H__
 
