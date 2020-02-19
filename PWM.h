@@ -10,7 +10,14 @@ public:
     virtual ~PWM(){}
 
     void set_value(byte value) { this->value = value; }
-    byte update();
+    byte update() {
+        value_buf += value;
+        if (value_buf > 128) {
+            value_buf -= 128;
+            return 1;
+        }
+        return 0;
+    }
 
 private:
     byte value;
